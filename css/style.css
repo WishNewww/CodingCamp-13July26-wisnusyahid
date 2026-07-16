@@ -104,12 +104,6 @@ body {
   padding: var(--spacing-md);
 }
 
-/* --- Header (greeting widget — always full width) ---------- */
-header {
-  width: 100%;
-  margin-bottom: var(--spacing-lg);
-}
-
 /* --- Main grid container ----------------------------------- */
 main {
   width: 100%;
@@ -292,6 +286,7 @@ header {
   box-shadow: var(--shadow-sm);
   padding: var(--spacing-lg);
   transition: var(--transition-theme);
+  margin-bottom: var(--spacing-lg);
 }
 
 /* ── Greeting section (left side) ─────────────────────────── */
