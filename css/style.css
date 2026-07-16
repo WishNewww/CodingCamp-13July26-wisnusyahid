@@ -1,0 +1,79 @@
+/* Personal Dashboard — style.css */
+/* Populated by tasks 3.2, 11.1, 11.2, 11.3 */
+
+/* ============================================================
+   TASK 3.2 — CSS Custom Properties & Theme Switching
+   Requirements: 10.2, 10.4
+   ============================================================ */
+
+/* --- Light theme (default) --------------------------------- */
+:root {
+  /* Background layers */
+  --color-bg:        #f2f4f8;   /* page background */
+  --color-surface:   #ffffff;   /* widget / card surface */
+  --color-surface-2: #e8ecf2;   /* secondary surface (inputs, nested areas) */
+
+  /* Text */
+  --color-text:        #1a1d23;  /* primary text */
+  --color-text-muted:  #5a6070;  /* secondary / placeholder text */
+
+  /* Accent */
+  --color-accent:        #4f6ef7;  /* primary interactive color (buttons, focus) */
+  --color-accent-hover:  #3a58e0;  /* accent on hover */
+  --color-accent-fg:     #ffffff;  /* text on accent background */
+
+  /* Semantic */
+  --color-success:  #2e7d32;  /* completed tasks, positive feedback */
+  --color-error:    #c62828;  /* validation errors */
+  --color-warning:  #e65100;  /* storage warning banner */
+
+  /* Borders & shadows */
+  --color-border:   #d0d5de;
+  --shadow-sm:      0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md:      0 4px 12px rgba(0, 0, 0, 0.10);
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+
+  /* Spacing & radius */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+
+  /* Transitions */
+  --transition-theme: background-color 0.2s ease, color 0.2s ease,
+                      border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* --- Dark theme override ----------------------------------- */
+[data-theme="dark"] {
+  /* Background layers */
+  --color-bg:        #0f1117;
+  --color-surface:   #1c1f2e;
+  --color-surface-2: #252839;
+
+  /* Text */
+  --color-text:        #e8eaf2;
+  --color-text-muted:  #8b92a8;
+
+  /* Accent */
+  --color-accent:        #6c8aff;
+  --color-accent-hover:  #8ba3ff;
+  --color-accent-fg:     #0f1117;
+
+  /* Semantic */
+  --color-success:  #66bb6a;
+  --color-error:    #ef5350;
+  --color-warning:  #ffa726;
+
+  /* Borders & shadows */
+  --color-border:   #2e3248;
+  --shadow-sm:      0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md:      0 4px 12px rgba(0, 0, 0, 0.50);
+}

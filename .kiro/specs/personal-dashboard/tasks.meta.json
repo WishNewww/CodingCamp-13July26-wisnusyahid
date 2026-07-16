@@ -1,0 +1,313 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Set up project structure and HTML skeleton": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208555781
+      }
+    ],
+    "2.1 Implement the `Storage` utility object in `app.js`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208556563
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208570744
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208738193
+      }
+    ],
+    "2.3 Implement the `localStorage` unavailability banner": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208556759
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208767754
+      }
+    ],
+    "3.1 Implement `ThemeManager` in `app.js`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208556936
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208771979
+      }
+    ],
+    "3.2 Add CSS custom properties and theme switching to `style.css`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208557089
+      },
+      {
+        "executionId": "81d80f26-dde9-4237-9d55-8a3ede249e7a",
+        "chatSessionId": "sess_c3e84c1b-7aaf-48f7-b86f-ec8d647a857b",
+        "timestamp": 1784209108813
+      }
+    ],
+    "4.1 Add greeting HTML structure to `index.html`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208557231
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208576313
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208743765
+      }
+    ],
+    "4.2 Implement `GreetingWidget.getGreeting(hour)` pure function": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208557392
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208776393
+      }
+    ],
+    "4.4 Implement `GreetingWidget.tick()`, `GreetingWidget.renderUserName()`, and `GreetingWidget.setUserName(name)`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208557536
+      },
+      {
+        "executionId": "81d80f26-dde9-4237-9d55-8a3ede249e7a",
+        "chatSessionId": "sess_c3e84c1b-7aaf-48f7-b86f-ec8d647a857b",
+        "timestamp": 1784209113249
+      }
+    ],
+    "4.5 Implement `GreetingWidget.init()`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208557655
+      }
+    ],
+    "5. Checkpoint — Greeting and theme working end-to-end": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208557783
+      }
+    ],
+    "6.1 Add timer HTML structure to `index.html`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208557919
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208581696
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208747690
+      }
+    ],
+    "6.2 Implement `TimerWidget.formatTime(secs)` pure function": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208558055
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208781217
+      }
+    ],
+    "6.4 Implement `TimerWidget` state and controls": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208558180
+      },
+      {
+        "executionId": "81d80f26-dde9-4237-9d55-8a3ede249e7a",
+        "chatSessionId": "sess_c3e84c1b-7aaf-48f7-b86f-ec8d647a857b",
+        "timestamp": 1784209117531
+      }
+    ],
+    "7.1 Add to-do HTML structure to `index.html`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208558325
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208585587
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208751545
+      }
+    ],
+    "7.2 Implement `TodoWidget.isDuplicate(text)` pure function": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208558526
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208785547
+      }
+    ],
+    "7.4 Implement `TodoWidget.addTask(text)`, `editTask(index, newText)`, `toggleComplete(index)`, `deleteTask(index)`, and `saveTasks()`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208558639
+      },
+      {
+        "executionId": "81d80f26-dde9-4237-9d55-8a3ede249e7a",
+        "chatSessionId": "sess_c3e84c1b-7aaf-48f7-b86f-ec8d647a857b",
+        "timestamp": 1784209121453
+      }
+    ],
+    "7.7 Implement `TodoWidget.getSortedTasks()` and `setSort(option)`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208558760
+      }
+    ],
+    "7.10 Implement `TodoWidget.render()` and `TodoWidget.init()`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208558902
+      }
+    ],
+    "8. Checkpoint — Timer and To-Do list working end-to-end": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208559026
+      }
+    ],
+    "9.1 Add quick-links HTML structure to `index.html`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208559178
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208589562
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208755755
+      }
+    ],
+    "9.2 Implement `LinkWidget.validateUrl(url)` pure function": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208559347
+      },
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208789830
+      }
+    ],
+    "9.4 Implement `LinkWidget.addLink(label, url)`, `deleteLink(index)`, `saveLinks()`, and `render()`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208559492
+      },
+      {
+        "executionId": "81d80f26-dde9-4237-9d55-8a3ede249e7a",
+        "chatSessionId": "sess_c3e84c1b-7aaf-48f7-b86f-ec8d647a857b",
+        "timestamp": 1784209125641
+      }
+    ],
+    "9.6 Implement `LinkWidget.init()`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208559600
+      }
+    ],
+    "10.1 Wire the full initialization order inside `DOMContentLoaded`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208559752
+      }
+    ],
+    "10.2 Add accessibility attributes throughout `index.html`": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208559916
+      }
+    ],
+    "11.1 Implement responsive grid layout": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208560066
+      }
+    ],
+    "11.2 Style each widget and interactive states": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208560214
+      }
+    ],
+    "11.3 Verify color contrast for both themes": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208560355
+      }
+    ],
+    "12. Final checkpoint — full integration pass": [
+      {
+        "executionId": "92c579e6-beee-4082-b0be-4e815a26d506",
+        "chatSessionId": "sess_08f2470a-7f65-474b-b5b7-f54d3a72d5b5",
+        "timestamp": 1784208560472
+      }
+    ]
+  }
+}
