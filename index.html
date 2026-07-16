@@ -10,7 +10,7 @@
 
   <!-- Storage unavailability banner (injected by JS if needed) -->
 
-  <header>
+  <header aria-label="Dashboard header">
     <section id="greeting" aria-label="Greeting widget">
       <time id="clock" datetime="" aria-live="polite" aria-label="Current time">00:00:00</time>
       <p id="date-display" aria-label="Current date"></p>
@@ -43,7 +43,7 @@
       <!-- Pomodoro Timer Widget -->
       <section id="timer" aria-label="Pomodoro timer">
         <h2>Focus Timer</h2>
-        <div id="timer-display" aria-live="polite" aria-label="Timer display">25:00</div>
+        <div id="timer-display" role="timer" aria-live="polite" aria-label="Timer display">25:00</div>
         <div class="timer-controls">
           <button id="timer-start" type="button" aria-label="Start timer">Start</button>
           <button id="timer-stop" type="button" aria-label="Stop timer" disabled>Stop</button>
@@ -120,7 +120,7 @@
           <button id="link-add" type="button" aria-label="Add link">Add Link</button>
           <span id="link-error" role="alert" aria-live="polite"></span>
         </div>
-        <div id="link-panel" aria-label="Saved links"></div>
+        <div id="link-panel" role="list" aria-label="Saved links"></div>
       </section>
 
     </div>

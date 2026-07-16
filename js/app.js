@@ -88,6 +88,78 @@ var Storage = {
   }
 };
 
+// ─── ThemeManager ──────────────────────────────────────────────────────────────
+// Reads the saved theme preference (or falls back to "light") and applies it
+// to document.documentElement before any widget renders, preventing a flash of
+// the wrong theme. Provides toggle() and getCurrent() for the theme button.
+
+var ThemeManager = {
+
+  /**
+   * Returns the currently active theme: "light" or "dark".
+   * Derives the value directly from the data-theme attribute so it always
+   * reflects the live DOM state.
+   *
+   * Requirements: 10.1, 10.3
+   *
+   * @returns {"light"|"dark"}
+   */
+  getCurrent: function () {
+    var theme = document.documentElement.dataset.theme;
+    return theme === 'dark' ? 'dark' : 'light';
+  },
+
+  /**
+   * Applies the given theme string to the <html> element and syncs
+   * aria-pressed on the toggle button.
+   *
+   * @private
+   * @param {"light"|"dark"} theme
+   */
+  _apply: function (theme) {
+    document.documentElement.dataset.theme = theme;
+    var btn = document.getElementById('theme-toggle');
+    if (btn) {
+      btn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    }
+  },
+
+  /**
+   * Initialises ThemeManager.
+   *  - Reads pd_theme from Storage; falls back to "light" if null.
+   *  - Sets document.documentElement.dataset.theme immediately (before any
+   *    widget renders) to prevent a theme flash.
+   *  - Wires the #theme-toggle button's click event to toggle().
+   *
+   * Requirements: 10.1, 10.2, 10.4, 10.5
+   */
+  init: function () {
+    var saved = Storage.get('pd_theme');
+    var theme = (saved === 'dark') ? 'dark' : 'light';
+    ThemeManager._apply(theme);
+
+    var btn = document.getElementById('theme-toggle');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        ThemeManager.toggle();
+      });
+    }
+  },
+
+  /**
+   * Flips the current theme between "light" and "dark", persists the new
+   * value to localStorage, and re-applies it to the document.
+   *
+   * Requirements: 10.1, 10.2, 10.3
+   */
+  toggle: function () {
+    var next = ThemeManager.getCurrent() === 'dark' ? 'light' : 'dark';
+    Storage.set('pd_theme', next);
+    ThemeManager._apply(next);
+  }
+
+};
+
 // ─── GreetingWidget ────────────────────────────────────────────────────────────
 // Manages the real-time clock, date display, time-of-day greeting, and the
 // optional custom user name.
@@ -294,6 +366,265 @@ var GreetingWidget = {
   }
 
 };
+
+// ─── TimerWidget ──────────────────────────────────────────────────────────────
+// Manages a configurable Pomodoro countdown timer with start/stop/reset controls
+// and an audible + visible alert on completion.
+// Requirements: 4.1–4.10
+
+var TimerWidget = (function () {
+
+  // ── Module-scoped state ──────────────────────────────────────────────────────
+  var intervalId       = null;   // active setInterval handle, or null when idle
+  var remainingSeconds = 0;      // current countdown value in seconds
+  var totalSeconds     = 0;      // full duration (restored on reset)
+
+  return {
+
+    // ── 6.2 ── formatTime(secs) ───────────────────────────────────────────────
+
+    /**
+     * Pure function — converts an integer number of seconds to "MM:SS".
+     * Both parts are zero-padded to two digits.
+     *
+     * Property 4 (design.md): validates Requirements 4.2, 4.3
+     *
+     * @param {number} secs - Integer in [0, 3599]
+     * @returns {string}    - e.g. "05:00", "00:00", "59:59"
+     */
+    formatTime: function (secs) {
+      var m = Math.floor(secs / 60);
+      var s = secs % 60;
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    },
+
+    // ── Internal helper ── _updateDisplay() ─────────────────────────────────
+
+    /** @private — writes the current remainingSeconds to #timer-display */
+    _updateDisplay: function () {
+      var displayEl = document.getElementById('timer-display');
+      if (displayEl) {
+        displayEl.textContent = TimerWidget.formatTime(remainingSeconds);
+      }
+    },
+
+    // ── 6.4 ── countdown() ────────────────────────────────────────────────────
+
+    /**
+     * Called every second by the active interval.
+     * Decrements remainingSeconds, updates the display, and calls onComplete()
+     * when the countdown reaches zero.
+     *
+     * Requirements: 4.5, 4.7
+     */
+    countdown: function () {
+      remainingSeconds -= 1;
+      TimerWidget._updateDisplay();
+      if (remainingSeconds <= 0) {
+        TimerWidget.onComplete();
+      }
+    },
+
+    // ── 6.4 ── onComplete() ───────────────────────────────────────────────────
+
+    /**
+     * Fired when the countdown reaches 00:00.
+     *  - Clears the active interval
+     *  - Shows a visible notification in #timer-notification
+     *  - Plays an audible beep via AudioContext (silent fallback if unavailable)
+     *  - Re-enables Start, disables Stop
+     *
+     * Requirements: 4.7, 4.8, 4.9
+     */
+    onComplete: function () {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+
+      // ── UI state ─────────────────────────────────────────────────────────────
+      var startBtn = document.getElementById('timer-start');
+      var stopBtn  = document.getElementById('timer-stop');
+      if (startBtn) startBtn.disabled = false;
+      if (stopBtn)  stopBtn.disabled  = true;
+
+      // ── Visible notification ─────────────────────────────────────────────────
+      var notifEl = document.getElementById('timer-notification');
+      if (notifEl) {
+        notifEl.textContent = 'Session complete!';
+        // Auto-clear the notification after 5 seconds
+        setTimeout(function () {
+          if (notifEl.textContent === 'Session complete!') {
+            notifEl.textContent = '';
+          }
+        }, 5000);
+      }
+
+      // ── Audible alert (AudioContext; silent fallback) ─────────────────────────
+      try {
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          var ctx        = new AudioCtx();
+          var oscillator = ctx.createOscillator();
+          var gainNode   = ctx.createGain();
+          oscillator.connect(gainNode);
+          gainNode.connect(ctx.destination);
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+          gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1);
+          oscillator.start(ctx.currentTime);
+          oscillator.stop(ctx.currentTime + 1);
+        }
+      } catch (e) {
+        // Silently skip audio if AudioContext is unavailable or blocked
+      }
+    },
+
+    // ── 6.4 ── start() ────────────────────────────────────────────────────────
+
+    /**
+     * Starts the countdown interval if one is not already running.
+     * Disables the Start button and enables Stop.
+     *
+     * Requirements: 4.4
+     */
+    start: function () {
+      if (intervalId !== null) return; // already running
+
+      var startBtn = document.getElementById('timer-start');
+      var stopBtn  = document.getElementById('timer-stop');
+      if (startBtn) startBtn.disabled = true;
+      if (stopBtn)  stopBtn.disabled  = false;
+
+      intervalId = setInterval(TimerWidget.countdown, 1000);
+    },
+
+    // ── 6.4 ── stop() ─────────────────────────────────────────────────────────
+
+    /**
+     * Pauses the countdown by clearing the active interval.
+     * Retains remainingSeconds so the timer can be resumed.
+     * Enables Start, disables Stop.
+     *
+     * Requirements: 4.5
+     */
+    stop: function () {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+
+      var startBtn = document.getElementById('timer-start');
+      var stopBtn  = document.getElementById('timer-stop');
+      if (startBtn) startBtn.disabled = false;
+      if (stopBtn)  stopBtn.disabled  = true;
+    },
+
+    // ── 6.4 ── reset() ────────────────────────────────────────────────────────
+
+    /**
+     * Stops any active countdown and restores the display to the full
+     * duration (totalSeconds). Clears any completion notification.
+     *
+     * Requirements: 4.6
+     */
+    reset: function () {
+      TimerWidget.stop();
+      remainingSeconds = totalSeconds;
+      TimerWidget._updateDisplay();
+
+      var notifEl = document.getElementById('timer-notification');
+      if (notifEl) notifEl.textContent = '';
+    },
+
+    // ── 6.4 ── setDuration(mins) ──────────────────────────────────────────────
+
+    /**
+     * Validates the given duration in minutes (must be an integer in [1, 60]),
+     * persists it to localStorage under "pd_pomodoro_duration", and updates
+     * totalSeconds.
+     *
+     * Does NOT interrupt an active countdown (per design.md).
+     * Shows an inline error in #timer-error on invalid input.
+     *
+     * Requirements: 4.10
+     *
+     * @param {*} mins - Raw value from the duration input field
+     */
+    setDuration: function (mins) {
+      var errorEl = document.getElementById('timer-error');
+      var parsed  = parseInt(mins, 10);
+
+      if (isNaN(parsed) || parsed < 1 || parsed > 60) {
+        if (errorEl) errorEl.textContent = 'Duration must be between 1 and 60 minutes.';
+        return;
+      }
+
+      if (errorEl) errorEl.textContent = '';
+      Storage.set('pd_pomodoro_duration', parsed);
+      totalSeconds = parsed * 60;
+
+      // Update display only when the timer is idle (not actively counting down)
+      if (intervalId === null) {
+        remainingSeconds = totalSeconds;
+        TimerWidget._updateDisplay();
+      }
+    },
+
+    // ── 6.4 ── init() ─────────────────────────────────────────────────────────
+
+    /**
+     * Initialises the TimerWidget.
+     *  - Reads pd_pomodoro_duration (default 25) from Storage
+     *  - Sets totalSeconds and remainingSeconds
+     *  - Renders the idle display
+     *  - Binds Start, Stop, Reset buttons and the duration Set button
+     *  - Clears #timer-error on duration input events
+     *
+     * Requirements: 4.1, 4.4, 4.5, 4.6, 4.10
+     */
+    init: function () {
+      var saved    = Storage.get('pd_pomodoro_duration');
+      var duration = (typeof saved === 'number' && saved >= 1 && saved <= 60) ? saved : 25;
+
+      totalSeconds     = duration * 60;
+      remainingSeconds = totalSeconds;
+
+      TimerWidget._updateDisplay();
+
+      // ── Button bindings ──────────────────────────────────────────────────────
+      var startBtn    = document.getElementById('timer-start');
+      var stopBtn     = document.getElementById('timer-stop');
+      var resetBtn    = document.getElementById('timer-reset');
+      var durationInput = document.getElementById('timer-duration-input');
+      var durationSave  = document.getElementById('timer-duration-save');
+      var errorEl       = document.getElementById('timer-error');
+
+      if (startBtn) startBtn.addEventListener('click', function () { TimerWidget.start(); });
+      if (stopBtn)  stopBtn.addEventListener('click',  function () { TimerWidget.stop();  });
+      if (resetBtn) resetBtn.addEventListener('click', function () { TimerWidget.reset(); });
+
+      if (durationSave && durationInput) {
+        durationSave.addEventListener('click', function () {
+          TimerWidget.setDuration(durationInput.value);
+        });
+      }
+
+      // Clear inline error as the user types a new duration
+      if (durationInput && errorEl) {
+        durationInput.addEventListener('input', function () {
+          errorEl.textContent = '';
+        });
+      }
+
+      // Ensure Stop is disabled in idle state (matches the HTML disabled attr)
+      if (stopBtn) stopBtn.disabled = true;
+    }
+
+  };
+
+}()); // end TimerWidget IIFE
 
 // ─── LinkWidget ───────────────────────────────────────────────────────────────
 // Manages the Quick Links panel: add, delete, persist, and render saved links.
@@ -515,12 +846,449 @@ var LinkWidget = {
 
 };
 
+
+// ─── TodoWidget ───────────────────────────────────────────────────────────────
+// Manages the task list: add, edit, complete, delete, sort, and duplicate check.
+// Requirements: 5.2, 5.4, 5.5, 6.3, 6.4, 6.5, 7.2, 7.3, 7.5, 8.1, 8.2, 8.3
+var TodoWidget = {
+
+  /** @private — in-memory tasks array (insertion order preserved) */
+  tasksArray: [],
+
+  /** @private — current sort preference */
+  currentSort: 'default',
+
+  // ── 7.2 ── isDuplicate(text) ──────────────────────────────────────────────
+  /**
+   * Pure function — returns true when the trimmed, lower-cased form of `text`
+   * matches any existing task's normalised text.
+   *
+   * Property 5 (design.md): validates Requirement 5.5
+   *
+   * @param {string} text - Raw input text
+   * @returns {boolean}
+   */
+  isDuplicate: function (text) {
+    var normalized = text.trim().toLowerCase();
+    return this.tasksArray.some(function (task) {
+      return task.text.trim().toLowerCase() === normalized;
+    });
+  },
+
+  // ── 7.4 ── saveTasks() ────────────────────────────────────────────────────
+  /**
+   * Persists the current tasksArray to localStorage under "pd_tasks".
+   *
+   * Requirements: 5.2, 7.2, 7.3, 7.5, 11.1
+   */
+  saveTasks: function () {
+    Storage.set('pd_tasks', this.tasksArray);
+  },
+
+  // ── 7.4 ── addTask(text) ──────────────────────────────────────────────────
+  /**
+   * Validates the input, rejects empty or duplicate tasks, creates a task
+   * object, pushes it to the internal array, persists, and re-renders.
+   *
+   * Validation:
+   *  - Trims input first.
+   *  - Empty / whitespace-only → error in #todo-error (Req 5.4)
+   *  - Duplicate (case-insensitive after trim) → error in #todo-error (Req 5.5)
+   *
+   * Task object shape:
+   *   { id: string, text: string, completed: false, createdAt: number }
+   *
+   * Requirements: 5.2, 5.4, 5.5
+   *
+   * @param {string} text - Raw value from #todo-input
+   */
+  addTask: function (text) {
+    var errorEl = document.getElementById('todo-error');
+    var trimmed = (typeof text === 'string') ? text.trim() : '';
+
+    // ── Reject empty / whitespace-only (Req 5.4) ────────────────────────────
+    if (trimmed === '') {
+      if (errorEl) errorEl.textContent = 'Task cannot be empty.';
+      return;
+    }
+
+    // ── Reject duplicate (Req 5.5) ───────────────────────────────────────────
+    if (this.isDuplicate(trimmed)) {
+      if (errorEl) errorEl.textContent = 'This task already exists.';
+      return;
+    }
+
+    // ── Clear previous error ─────────────────────────────────────────────────
+    if (errorEl) errorEl.textContent = '';
+
+    // ── Create task object ───────────────────────────────────────────────────
+    var task = {
+      id: (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+        ? crypto.randomUUID()
+        : Date.now().toString(),
+      text: trimmed,
+      completed: false,
+      createdAt: Date.now()
+    };
+
+    this.tasksArray.push(task);
+    this.saveTasks();
+    this.render();
+  },
+
+  // ── 7.4 ── editTask(index, newText) ──────────────────────────────────────
+  /**
+   * Validates the new text, updates the array entry at the given index,
+   * persists, and re-renders.
+   *
+   * An empty / whitespace-only newText is rejected with an inline error shown
+   * in the edit row by _enterEditMode() before this method is ever called;
+   * this method also guards against it defensively.
+   *
+   * Requirements: 6.3, 6.5
+   *
+   * @param {number} index   - Zero-based index into tasksArray
+   * @param {string} newText - New task text (may be untrimmed)
+   */
+  editTask: function (index, newText) {
+    var trimmed = (typeof newText === 'string') ? newText.trim() : '';
+
+    // ── Reject empty text (Req 6.5) ──────────────────────────────────────────
+    if (trimmed === '') {
+      return; // inline error already shown by _enterEditMode confirm handler
+    }
+
+    if (index < 0 || index >= this.tasksArray.length) return;
+
+    this.tasksArray[index].text = trimmed;
+    this.saveTasks();
+    this.render();
+  },
+
+  // ── 7.4 ── toggleComplete(index) ─────────────────────────────────────────
+  /**
+   * Flips the `completed` boolean on the task at the given index,
+   * persists, and re-renders.
+   *
+   * Toggling twice returns the task to its original state (Property 8).
+   *
+   * Requirements: 7.2, 7.3
+   *
+   * @param {number} index - Zero-based index into tasksArray
+   */
+  toggleComplete: function (index) {
+    if (index < 0 || index >= this.tasksArray.length) return;
+    this.tasksArray[index].completed = !this.tasksArray[index].completed;
+    this.saveTasks();
+    this.render();
+  },
+
+  // ── 7.4 ── deleteTask(index) ─────────────────────────────────────────────
+  /**
+   * Removes the task at the given index from the array, persists, and
+   * re-renders.
+   *
+   * Requirements: 7.5
+   *
+   * @param {number} index - Zero-based index into tasksArray
+   */
+  deleteTask: function (index) {
+    if (index < 0 || index >= this.tasksArray.length) return;
+    this.tasksArray.splice(index, 1);
+    this.saveTasks();
+    this.render();
+  },
+
+  // ── 7.7 ── getSortedTasks() ───────────────────────────────────────────────
+  /**
+   * Returns a shallow copy of tasksArray sorted according to currentSort.
+   * The original array order (and therefore the localStorage order) is NEVER
+   * mutated — only the display copy is reordered (Property 9 / Req 8.2).
+   *
+   * Sort options:
+   *  "default"        — createdAt ascending (insertion order)
+   *  "az"             — case-insensitive alphabetical ascending
+   *  "za"             — case-insensitive alphabetical descending
+   *  "completed-last" — incomplete first, then completed; within each group
+   *                     ordered by createdAt ascending
+   *
+   * Requirements: 8.1, 8.2, 8.3
+   *
+   * @returns {Array} Sorted shallow copy of tasksArray
+   */
+  getSortedTasks: function () {
+    var copy   = this.tasksArray.slice();
+    var option = this.currentSort;
+
+    if (option === 'az') {
+      copy.sort(function (a, b) {
+        return a.text.toLowerCase().localeCompare(b.text.toLowerCase());
+      });
+    } else if (option === 'za') {
+      copy.sort(function (a, b) {
+        return b.text.toLowerCase().localeCompare(a.text.toLowerCase());
+      });
+    } else if (option === 'completed-last') {
+      copy.sort(function (a, b) {
+        if (a.completed === b.completed) return a.createdAt - b.createdAt;
+        return a.completed ? 1 : -1;
+      });
+    } else {
+      // 'default' — insertion order by createdAt ascending
+      copy.sort(function (a, b) { return a.createdAt - b.createdAt; });
+    }
+
+    return copy;
+  },
+
+  // ── 7.7 ── setSort(option) ────────────────────────────────────────────────
+  /**
+   * Saves the new sort preference to localStorage and re-renders.
+   *
+   * Requirements: 8.1, 8.2
+   *
+   * @param {string} option - One of "default", "az", "za", "completed-last"
+   */
+  setSort: function (option) {
+    this.currentSort = option;
+    Storage.set('pd_tasks_sort', option);
+    this.render();
+  },
+
+  // ── 7.10 ── render() ──────────────────────────────────────────────────────
+  /**
+   * Clears #todo-list and rebuilds it from getSortedTasks().
+   *
+   * Each task row contains:
+   *  - <input type="checkbox"> (pre-checked when completed)
+   *  - <span class="task-text"> (strikethrough class when completed)
+   *  - Edit <button>
+   *  - Delete <button>
+   *
+   * Clicking Edit switches the row to inline-edit mode via _enterEditMode().
+   *
+   * Requirements: 5.1, 5.3, 6.1, 6.2, 7.1, 7.4, 8.1, 8.3
+   */
+  render: function () {
+    var listEl = document.getElementById('todo-list');
+    if (!listEl) return;
+
+    var sorted = this.getSortedTasks();
+    var self   = this;
+
+    listEl.innerHTML = '';
+
+    sorted.forEach(function (task) {
+      // Resolve the real index in the unsorted array so mutations are correct
+      var realIndex = self.tasksArray.indexOf(task);
+
+      var li = document.createElement('li');
+      li.className = 'todo-item' + (task.completed ? ' completed' : '');
+
+      // ── Checkbox ────────────────────────────────────────────────────────────
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = task.completed;
+      checkbox.setAttribute('aria-label',
+        'Mark "' + task.text + '" as ' + (task.completed ? 'incomplete' : 'complete'));
+      (function (capturedIndex) {
+        checkbox.addEventListener('change', function () {
+          self.toggleComplete(capturedIndex);
+        });
+      })(realIndex);
+
+      // ── Task text ────────────────────────────────────────────────────────────
+      var textSpan = document.createElement('span');
+      textSpan.className = 'task-text';
+      textSpan.textContent = task.text;
+
+      // ── Edit button ──────────────────────────────────────────────────────────
+      var editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.textContent = 'Edit';
+      editBtn.className = 'btn-edit';
+      editBtn.setAttribute('aria-label', 'Edit task: ' + task.text);
+      (function (capturedLi, capturedTask, capturedIndex) {
+        editBtn.addEventListener('click', function () {
+          self._enterEditMode(capturedLi, capturedTask, capturedIndex);
+        });
+      })(li, task, realIndex);
+
+      // ── Delete button ────────────────────────────────────────────────────────
+      var deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.className = 'btn-delete';
+      deleteBtn.setAttribute('aria-label', 'Delete task: ' + task.text);
+      (function (capturedIndex) {
+        deleteBtn.addEventListener('click', function () {
+          self.deleteTask(capturedIndex);
+        });
+      })(realIndex);
+
+      li.appendChild(checkbox);
+      li.appendChild(textSpan);
+      li.appendChild(editBtn);
+      li.appendChild(deleteBtn);
+      listEl.appendChild(li);
+    });
+  },
+
+  // ── Internal helper ── _enterEditMode(li, task, realIndex) ────────────────
+  /**
+   * Replaces a task row's normal view with an inline editor.
+   *
+   * The row becomes:
+   *  <input class="edit-input"> (pre-filled)
+   *  <span class="edit-error" role="alert">
+   *  <button class="btn-confirm">Confirm</button>
+   *  <button class="btn-cancel">Cancel</button>
+   *
+   * Confirm validates (non-empty) then calls editTask().
+   * Cancel calls render() to restore the normal view (Req 6.4 — no save).
+   * Enter key = Confirm; Escape key = Cancel.
+   *
+   * Requirements: 6.1, 6.2, 6.3, 6.4, 6.5
+   *
+   * @param {HTMLElement} li         - The <li> element being edited
+   * @param {Object}      task       - Task object (for pre-fill)
+   * @param {number}      realIndex  - Index in tasksArray for editTask()
+   */
+  _enterEditMode: function (li, task, realIndex) {
+    var self = this;
+
+    li.innerHTML = '';
+
+    // ── Edit input ───────────────────────────────────────────────────────────
+    var editInput = document.createElement('input');
+    editInput.type = 'text';
+    editInput.value = task.text;
+    editInput.className = 'edit-input';
+    editInput.setAttribute('aria-label', 'Editing task: ' + task.text);
+
+    // ── Inline error span (Req 6.5) ──────────────────────────────────────────
+    var editError = document.createElement('span');
+    editError.className = 'edit-error';
+    editError.setAttribute('role', 'alert');
+
+    // ── Confirm button ───────────────────────────────────────────────────────
+    var confirmBtn = document.createElement('button');
+    confirmBtn.type = 'button';
+    confirmBtn.textContent = 'Confirm';
+    confirmBtn.className = 'btn-confirm';
+    confirmBtn.setAttribute('aria-label', 'Confirm edit');
+    confirmBtn.addEventListener('click', function () {
+      var newText = editInput.value.trim();
+      if (newText === '') {
+        editError.textContent = 'Task text cannot be empty.';
+        return;
+      }
+      self.editTask(realIndex, editInput.value);
+    });
+
+    // ── Cancel button (Req 6.4 — discard without saving) ────────────────────
+    var cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.className = 'btn-cancel';
+    cancelBtn.setAttribute('aria-label', 'Cancel edit');
+    cancelBtn.addEventListener('click', function () {
+      self.render(); // re-render restores the normal view
+    });
+
+    // Clear inline error on input
+    editInput.addEventListener('input', function () {
+      editError.textContent = '';
+    });
+
+    // Keyboard shortcuts: Enter = confirm, Escape = cancel
+    editInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter')  confirmBtn.click();
+      if (e.key === 'Escape') cancelBtn.click();
+    });
+
+    li.appendChild(editInput);
+    li.appendChild(editError);
+    li.appendChild(confirmBtn);
+    li.appendChild(cancelBtn);
+
+    editInput.focus();
+  },
+
+  // ── 7.10 ── init() ────────────────────────────────────────────────────────
+  /**
+   * Initialises the TodoWidget.
+   *  - Loads persisted tasks and sort preference from localStorage
+   *  - Renders the task list
+   *  - Syncs the #todo-sort <select> to the saved preference
+   *  - Binds #todo-add click and Enter keypress on #todo-input to addTask()
+   *  - Clears #todo-error on every input event
+   *
+   * Requirements: 5.1, 5.3, 6.1, 7.1, 8.1, 8.3
+   */
+  init: function () {
+    var self = this;
+
+    // ── Load persisted state ─────────────────────────────────────────────────
+    var savedTasks = Storage.get('pd_tasks');
+    this.tasksArray = Array.isArray(savedTasks) ? savedTasks : [];
+    this.currentSort = Storage.get('pd_tasks_sort') || 'default';
+
+    // ── Render initial list ──────────────────────────────────────────────────
+    this.render();
+
+    // ── Sync sort <select> ───────────────────────────────────────────────────
+    var sortEl = document.getElementById('todo-sort');
+    if (sortEl) {
+      sortEl.value = this.currentSort;
+      sortEl.addEventListener('change', function () {
+        self.setSort(sortEl.value);
+      });
+    }
+
+    // ── Wire Add button and Enter key ────────────────────────────────────────
+    var inputEl = document.getElementById('todo-input');
+    var addBtn  = document.getElementById('todo-add');
+    var errorEl = document.getElementById('todo-error');
+
+    if (addBtn && inputEl) {
+      addBtn.addEventListener('click', function () {
+        self.addTask(inputEl.value);
+        // Clear the input only when there was no error (error implies nothing was added)
+        if (errorEl && errorEl.textContent === '') {
+          inputEl.value = '';
+        }
+      });
+
+      inputEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          self.addTask(inputEl.value);
+          if (errorEl && errorEl.textContent === '') {
+            inputEl.value = '';
+          }
+        }
+      });
+    }
+
+    // ── Clear #todo-error when user begins typing ────────────────────────────
+    if (inputEl && errorEl) {
+      inputEl.addEventListener('input', function () {
+        errorEl.textContent = '';
+      });
+    }
+  }
+
+};
+
 // ─── DOMContentLoaded initialisation sequence ─────────────────────────────────
 // ThemeManager.init() must run first (task 3.1) to prevent a theme flash.
 // Remaining widgets are wired in task 10.1.
 
 document.addEventListener('DOMContentLoaded', function () {
-  // 1. Check localStorage availability and show banner if unavailable
+  // ── Step 1: Storage availability check + banner ──────────────────────────
+  // Show a non-blocking banner if localStorage is unavailable so all widgets
+  // below can still run in-memory for the session.
+  // Requirements: 11.2, 11.3
   if (!Storage.isAvailable()) {
     var banner = document.createElement('div');
     banner.setAttribute('role', 'alert');
@@ -534,10 +1302,33 @@ document.addEventListener('DOMContentLoaded', function () {
     document.body.insertBefore(banner, document.body.firstChild);
   }
 
-  // 2. ThemeManager.init()  ← task 3.1
-  // 3. GreetingWidget.init()
+  // ── Step 2: ThemeManager.init() ──────────────────────────────────────────
+  // MUST run before any widget renders to prevent a flash of the wrong theme.
+  // Reads pd_theme from localStorage and sets data-theme on <html> immediately.
+  // Requirements: 10.4, 12.1
+  ThemeManager.init();
+
+  // ── Step 3: GreetingWidget.init() ────────────────────────────────────────
+  // Loads saved user name, starts the 1-second clock interval, fires tick()
+  // immediately so there is no blank second on load.
+  // Requirements: 1.1, 1.3, 3.2
   GreetingWidget.init();
-  // 4. TimerWidget.init()   ← task 6.4
-  // 5. TodoWidget.init()    ← task 7.10
-  // 6. LinkWidget.init()    ← task 9.6
+
+  // ── Step 4: TimerWidget.init() ───────────────────────────────────────────
+  // Reads saved Pomodoro duration (default 25 min), renders idle state, and
+  // binds Start / Stop / Reset / Set controls.
+  // Requirements: 4.1, 4.9
+  TimerWidget.init();
+
+  // ── Step 5: TodoWidget.init() ────────────────────────────────────────────
+  // Loads persisted tasks and sort preference, renders the list, and binds
+  // the Add / Edit / Delete / Complete / Sort controls.
+  // Requirements: 5.1, 5.3, 8.3
+  TodoWidget.init();
+
+  // ── Step 6: LinkWidget.init() ────────────────────────────────────────────
+  // Loads persisted links, renders the panel, and binds the Add / Delete
+  // controls.
+  // Requirements: 9.7
+  LinkWidget.init();
 });

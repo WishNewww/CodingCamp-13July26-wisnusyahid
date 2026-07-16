@@ -77,3 +77,751 @@
   --shadow-sm:      0 1px 3px rgba(0, 0, 0, 0.35);
   --shadow-md:      0 4px 12px rgba(0, 0, 0, 0.50);
 }
+
+/* ============================================================
+   TASK 11.1 — Responsive Grid Layout
+   Requirements: 12.5, 12.6
+   ============================================================ */
+
+/* --- Base / mobile-first reset ----------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: var(--transition-theme);
+}
+
+body {
+  min-height: 100vh;
+  padding: var(--spacing-md);
+}
+
+/* --- Header (greeting widget — always full width) ---------- */
+header {
+  width: 100%;
+  margin-bottom: var(--spacing-lg);
+}
+
+/* --- Main grid container ----------------------------------- */
+main {
+  width: 100%;
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: var(--spacing-lg);
+
+  /* Single-column default (mobile-first) */
+  grid-template-columns: 1fr;
+
+  /*
+   * Named grid areas keep placement explicit and readable.
+   * On mobile all sections stack: timer → todo → links.
+   */
+  grid-template-areas:
+    "timer"
+    "todo"
+    "links";
+}
+
+/* --- Widget section base style ----------------------------- */
+.dashboard-grid > section {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-lg);
+  transition: var(--transition-theme);
+}
+
+/* --- Widget area assignments ------------------------------- */
+#timer { grid-area: timer; }
+#todo  { grid-area: todo;  }
+#links { grid-area: links; }
+
+/* --- Two-column layout at ≥768 px -------------------------- */
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+
+    /*
+     * Timer and todo share the first row (one column each).
+     * Links spans both columns on the second row.
+     */
+    grid-template-areas:
+      "timer todo"
+      "links links";
+  }
+
+  /* Links panel explicitly spans both columns */
+  #links {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- Single-column override at <768 px -------------------- */
+@media (max-width: 767px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "timer"
+      "todo"
+      "links";
+  }
+}
+
+/* ============================================================
+   TASK 11.2 — Widget Styles
+   Requirements: 7.2, 4.6, 12.1
+   ============================================================ */
+
+/* ── Shared interactive-element base ─────────────────────────
+   All buttons and inputs inherit font from the document and
+   respect the current theme via CSS variables.
+   ---------------------------------------------------------- */
+button,
+input,
+select {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  transition: var(--transition-theme);
+}
+
+/* ── Base button ─────────────────────────────────────────── */
+button {
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-2);
+  color: var(--color-text);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  line-height: 1.4;
+}
+
+button:hover {
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Base input / select ─────────────────────────────────── */
+input[type="text"],
+input[type="number"],
+input[type="url"],
+select {
+  background-color: var(--color-surface-2);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  line-height: 1.4;
+  width: 100%;
+}
+
+input[type="text"]::placeholder,
+input[type="number"]::placeholder,
+input[type="url"]::placeholder {
+  color: var(--color-text-muted);
+}
+
+input[type="text"]:focus-visible,
+input[type="number"]:focus-visible,
+input[type="url"]:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-color: var(--color-accent);
+}
+
+/* ── Shared error spans ──────────────────────────────────── */
+/* Requirement: 4.6 — validation messages use error colour   */
+#username-error,
+#timer-error,
+#todo-error,
+#link-error,
+.edit-error {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-error);
+  min-height: 1em;          /* prevents layout shift when empty */
+  margin-top: var(--spacing-xs);
+}
+
+/* ── Widget section headings ─────────────────────────────── */
+.dashboard-grid > section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--spacing-xs);
+}
+
+/* ============================================================
+   HEADER — Greeting widget + theme toggle
+   ============================================================ */
+header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-lg);
+  transition: var(--transition-theme);
+}
+
+/* ── Greeting section (left side) ─────────────────────────── */
+#greeting {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 1;
+  min-width: 0;
+}
+
+/* Clock */
+#clock {
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+/* Date */
+#date-display {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Greeting h1 */
+#greeting-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: var(--spacing-xs) 0 var(--spacing-sm);
+}
+
+/* Username form */
+.username-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.username-form label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.username-form input[type="text"] {
+  flex: 1;
+  min-width: 140px;
+  max-width: 220px;
+}
+
+#username-save {
+  flex-shrink: 0;
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+  font-weight: 600;
+}
+
+#username-save:hover {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+/* ── Theme toggle (top-right of header) ──────────────────── */
+#theme-toggle {
+  flex-shrink: 0;
+  align-self: flex-start;
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+#theme-toggle:hover {
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+}
+
+#theme-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   TIMER WIDGET
+   ============================================================ */
+
+/* Timer display — large monospace, prominent */
+/* Requirement: 4.6 — prominently displays remaining time    */
+#timer-display {
+  font-family: var(--font-mono);
+  font-size: clamp(3rem, 8vw, 5rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-text);
+  text-align: center;
+  margin: var(--spacing-sm) 0 var(--spacing-md);
+  line-height: 1;
+}
+
+/* Timer control buttons row */
+.timer-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.timer-controls button {
+  flex: 1;
+  min-width: 72px;
+  font-weight: 600;
+}
+
+/* Start — accent colour */
+#timer-start {
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+}
+
+#timer-start:hover {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+/* Stop — warning tint */
+#timer-stop {
+  background-color: var(--color-surface-2);
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+#timer-stop:hover:not(:disabled) {
+  background-color: var(--color-warning);
+  color: var(--color-accent-fg);
+}
+
+/* Reset — neutral */
+#timer-reset {
+  background-color: var(--color-surface-2);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+/* Duration form */
+.timer-duration-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.timer-duration-form label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+#timer-duration-input {
+  width: 72px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+#timer-duration-save {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+/* Notification */
+#timer-notification {
+  margin-top: var(--spacing-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-success);
+  text-align: center;
+  min-height: 1.2em;
+}
+
+/* ============================================================
+   TO-DO LIST WIDGET
+   ============================================================ */
+
+/* Add-task form */
+.todo-add-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.todo-add-form label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.todo-add-form input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+}
+
+#todo-add {
+  flex-shrink: 0;
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+  font-weight: 600;
+}
+
+#todo-add:hover {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+/* Sort form */
+.todo-sort-form {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.todo-sort-form label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+#todo-sort {
+  flex: 1;
+  max-width: 180px;
+}
+
+/* Task list */
+#todo-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin: 0;
+  padding: 0;
+}
+
+/* Individual task row */
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  transition: var(--transition-theme);
+}
+
+.todo-item:hover {
+  border-color: var(--color-accent);
+}
+
+/* Checkbox */
+.todo-item input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--color-accent);
+}
+
+.todo-item input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Task text */
+.task-text {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+/* Completed task — Requirement 7.2 strikethrough */
+.todo-item.completed .task-text {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+/* Edit / Delete / Confirm / Cancel buttons inside todo rows */
+.btn-edit,
+.btn-delete,
+.btn-confirm,
+.btn-cancel {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  padding: 2px var(--spacing-sm);
+}
+
+.btn-edit {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+.btn-edit:hover {
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+}
+
+.btn-delete {
+  background-color: var(--color-surface-2);
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.btn-delete:hover {
+  background-color: var(--color-error);
+  color: var(--color-accent-fg);
+  border-color: var(--color-error);
+}
+
+.btn-confirm {
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+  font-weight: 600;
+}
+
+.btn-confirm:hover {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.btn-cancel {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+.btn-cancel:hover {
+  background-color: var(--color-surface-2);
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+
+/* Inline edit field */
+.edit-input {
+  flex: 1;
+  min-width: 80px;
+  font-size: 0.9rem;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.edit-input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   QUICK LINKS WIDGET
+   ============================================================ */
+
+/* Add-link form */
+.link-add-form {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--spacing-xs) var(--spacing-sm);
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.link-add-form label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* The Add Link button and error span span both columns */
+#link-add {
+  grid-column: 1 / -1;
+  justify-self: start;
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+  border-color: var(--color-accent);
+  font-weight: 600;
+  padding: var(--spacing-xs) var(--spacing-md);
+}
+
+#link-add:hover {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+#link-error {
+  grid-column: 1 / -1;
+}
+
+/* Link panel */
+#link-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+/* Each link row */
+.link-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  max-width: 100%;
+  transition: var(--transition-theme);
+}
+
+.link-item:hover {
+  border-color: var(--color-accent);
+}
+
+/* Link button — truncate long labels */
+/* Requirement: 9.3 — overflow ellipsis for long labels       */
+.link-btn {
+  flex: 1;
+  min-width: 0;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-color: transparent;
+  color: var(--color-accent);
+  border: none;
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.link-btn:hover {
+  background-color: transparent;
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+  border: none;
+}
+
+.link-btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Delete button next to each link */
+.link-delete-btn {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  padding: 2px var(--spacing-sm);
+  background-color: var(--color-surface-2);
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.link-delete-btn:hover {
+  background-color: var(--color-error);
+  color: var(--color-accent-fg);
+  border-color: var(--color-error);
+}
+
+/* ============================================================
+   RESPONSIVE ADJUSTMENTS FOR WIDGET CONTENT
+   ============================================================ */
+
+@media (max-width: 767px) {
+  header {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  #theme-toggle {
+    align-self: flex-end;
+  }
+
+  #clock {
+    font-size: 2rem;
+  }
+
+  #timer-display {
+    font-size: clamp(3rem, 14vw, 4rem);
+  }
+
+  .timer-controls {
+    gap: var(--spacing-xs);
+  }
+
+  .link-add-form {
+    grid-template-columns: 1fr;
+  }
+
+  .link-add-form label {
+    margin-top: var(--spacing-xs);
+  }
+
+  #link-panel {
+    flex-direction: column;
+  }
+
+  .link-btn {
+    max-width: 100%;
+  }
+}
